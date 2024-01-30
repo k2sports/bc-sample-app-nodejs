@@ -1,19 +1,18 @@
 import {
   Button,
-  Checkbox,
   Flex,
   FormGroup,
   HR,
-  Input,
-  Panel,
+  MultiSelect,
   Select,
+  SelectOption,
   Small,
   Form as StyledForm,
   Switch,
   Text,
-  Textarea,
 } from "@bigcommerce/big-design";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { useCustomerGroups } from "@lib/hooks";
 import { FormData, StringKeyValue } from "../types";
 
 interface FormProps {
@@ -28,51 +27,36 @@ const FormErrors = {
 };
 
 const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
-  const { description, isVisible, name, price, type } = formData;
-  const [form, setForm] = useState<FormData>({
-    description,
-    isVisible,
-    name,
-    price,
-    type,
-  });
-  const [errors, setErrors] = useState<StringKeyValue>({});
-
-  const [isEnabled, setIsEnabled] = useState(false);
-  const handleSwitchChange = () => setIsEnabled(!isEnabled);
-
-  const handleChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name: formName, value } = event.target || {};
-    setForm((prevForm) => ({ ...prevForm, [formName]: value }));
-
-    // Add error if it exists in FormErrors and the input is empty, otherwise remove from errors
-    !value && FormErrors[formName]
-      ? setErrors((prevErrors) => ({
-          ...prevErrors,
-          [formName]: FormErrors[formName],
+  const { error, customerGroups } = useCustomerGroups();
+  const customerGroupOptions =
+    customerGroups?.length && !error
+      ? customerGroups.map((group) => ({
+          value: group.id,
+          content: group.name,
         }))
-      : setErrors(({ [formName]: removed, ...prevErrors }) => ({
-          ...prevErrors,
-        }));
-  };
+      : [];
 
-  const handleSelectChange = (value: string) => {
-    setForm((prevForm) => ({ ...prevForm, type: value }));
-  };
+  const { isEnabled, hideShippingMethods } = formData;
+  const [form, setForm] = useState<FormData>({
+    isEnabled,
+    hideShippingMethods,
+  });
 
-  const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked, name: formName } = event.target || {};
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name: formName, checked } = event.target || {};
     setForm((prevForm) => ({ ...prevForm, [formName]: checked }));
+  };
+
+  const handleSelectChange = (value: SelectOption<any>[]) => {
+    setForm((prevForm) => ({ ...prevForm, hideShippingMethods: value }));
   };
 
   const handleSubmit = (event: FormEvent<EventTarget>) => {
     event.preventDefault();
 
     // If there are errors, do not submit the form
-    const hasErrors = Object.keys(errors).length > 0;
-    if (hasErrors) return;
+    // const hasErrors = Object.keys(errors).length > 0;
+    // if (hasErrors) return;
 
     onSubmit(form);
   };
@@ -86,8 +70,9 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
           </label>
           <Switch
             id="enable-modify-shipping-methods"
-            checked={isEnabled}
-            onChange={handleSwitchChange}
+            name="isEnabled"
+            checked={form.isEnabled}
+            onChange={handleChange}
           />
         </FormGroup>
         <Small color="secondary50">
@@ -96,26 +81,20 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
           method options when a free shipping promotion is being used.
         </Small>
       </Flex>
-
-      <HR marginVertical="xxLarge" />
+      <HR marginVertical="xLarge" />
       <FormGroup>
         <Flex flexDirection="column" flexRowGap="8px">
-          <Select
-            disabled={!isEnabled}
+          <MultiSelect
+            disabled={!form.isEnabled}
             label="Hide Free Shipping"
-            placeholder="Select a Customer Group"
-            name="type"
-            options={[
-              { value: "physical", content: "Physical" },
-              { value: "digital", content: "Digital" },
-            ]}
-            required
-            value={form.type}
-            onOptionChange={handleSelectChange}
+            placeholder="Select Customer Groups"
+            name="hideShippingMethods"
+            options={customerGroupOptions}
+            value={form.hideShippingMethods}
+            onOptionsChange={handleSelectChange}
           />
           <Small as="span" color="secondary50">
-            Optional – hide the free shipping method for the selected customer
-            group.
+            Hide free shipping method for selected customer groups.
           </Small>
         </Flex>
       </FormGroup>

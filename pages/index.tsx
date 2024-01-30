@@ -3,13 +3,11 @@ import styled from "styled-components";
 import SettingsForm from "@components/settingsForm";
 import ErrorMessage from "../components/error";
 import Loading from "../components/loading";
-import { useCustomerGroups } from "../lib/hooks";
+import { useCustomerGroups, useProducts } from "../lib/hooks";
 
 const Index = () => {
-  const { error, isLoading, customerGroups } = useCustomerGroups();
-  const formData = {};
-
-  console.log("customerGroups", { error, isLoading, customerGroups });
+  //   const { error, isLoading, summary } = useProducts();
+  const formData = { isEnabled: false, hideFreeShipping: [] };
 
   const handleCancel = () => {
     console.log("Handling Canceling...");

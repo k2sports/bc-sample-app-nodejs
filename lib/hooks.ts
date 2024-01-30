@@ -122,7 +122,6 @@ export const useShippingAndProductsInfo = (orderId: number) => {
 };
 
 export function useCustomerGroups() {
-  console.log("useCustomerGroups");
   const { context } = useSession();
   const params = new URLSearchParams({ context }).toString();
   // Request is deduped and cached; Can be shared across components
