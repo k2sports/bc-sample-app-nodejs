@@ -152,3 +152,21 @@ export function useScripts() {
     error,
   };
 }
+
+export const useScript = (scriptId: number) => {
+  const { context } = useSession();
+  const params = new URLSearchParams({ context }).toString();
+  const shouldFetch = context && scriptId !== undefined;
+
+  // Conditionally fetch scriptId is defined
+  const { data, error } = useSWR(
+    shouldFetch ? [`/api/scripts/${scriptId}`, params] : null,
+    fetcher
+  );
+
+  return {
+    script: data,
+    isLoading: !data && !error,
+    error,
+  };
+};

@@ -4,7 +4,6 @@ import {
   FormGroup,
   HR,
   MultiSelect,
-  Select,
   SelectOption,
   Small,
   Form as StyledForm,
@@ -13,10 +12,11 @@ import {
 } from "@bigcommerce/big-design";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useCustomerGroups } from "@lib/hooks";
-import { FormData, StringKeyValue } from "../types";
+import { FormData } from "../types";
 
 interface FormProps {
   formData: FormData;
+  isLoading: boolean;
   onCancel(): void;
   onSubmit(form: FormData): void;
 }
@@ -26,7 +26,12 @@ const FormErrors = {
   price: "Default price is required",
 };
 
-const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
+const SettingsForm = ({
+  formData,
+  isLoading,
+  onCancel,
+  onSubmit,
+}: FormProps) => {
   const { error, customerGroups } = useCustomerGroups();
   const customerGroupOptions =
     customerGroups?.length && !error
@@ -101,6 +106,7 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
 
       <Flex justifyContent="flex-end">
         <Button
+          disabled
           marginRight="medium"
           type="button"
           variant="subtle"
@@ -108,7 +114,9 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
         >
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" isLoading={isLoading}>
+          Update
+        </Button>
       </Flex>
     </StyledForm>
   );
