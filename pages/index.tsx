@@ -1,12 +1,12 @@
-import { Box, Flex, Panel } from "@bigcommerce/big-design";
-import styled from "styled-components";
+import { Flex, Panel } from "@bigcommerce/big-design";
 import SettingsForm from "@components/settingsForm";
-import ErrorMessage from "../components/error";
-import Loading from "../components/loading";
-import { useCustomerGroups, useProducts } from "../lib/hooks";
+import { useScripts } from "../lib/hooks";
 
 const Index = () => {
-  //   const { error, isLoading, summary } = useProducts();
+  const { error, isLoading, scripts } = useScripts();
+
+  console.log("scripts", scripts);
+
   const formData = { isEnabled: false, hideFreeShipping: [] };
 
   const handleCancel = () => {
@@ -14,7 +14,24 @@ const Index = () => {
   };
 
   const handleSubmit = async (data: FormData) => {
-    console.log("Handling Submitting...");
+    console.log("Handling Submitting...", data);
+
+    await fetch(`/api/scripts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Bootstrap",
+        description: "Build responsive websites",
+        html: "",
+        auto_uninstall: true,
+        load_method: "default",
+        location: "footer",
+        visibility: "checkout",
+        kind: "script_tag",
+        consent_category: "functional",
+        enabled: false,
+      }),
+    });
   };
 
   return (
@@ -25,18 +42,6 @@ const Index = () => {
           onCancel={handleCancel}
           onSubmit={handleSubmit}
         />
-        {/* <StyledBox border="box" borderRadius="normal" marginRight="xLarge" padding="medium">
-                    <H4>Inventory count</H4>
-                    <H1 marginBottom="none">{summary.inventory_count}</H1>
-                </StyledBox>
-                <StyledBox border="box" borderRadius="normal" marginRight="xLarge" padding="medium">
-                    <H4>Variant count</H4>
-                    <H1 marginBottom="none">{summary.variant_count}</H1>
-                </StyledBox>
-                <StyledBox border="box" borderRadius="normal" padding="medium">
-                    <H4>Primary category</H4>
-                    <H1 marginBottom="none">{summary.primary_category_name}</H1>
-                </StyledBox> */}
       </Flex>
     </Panel>
   );

@@ -136,3 +136,19 @@ export function useCustomerGroups() {
     error,
   };
 }
+
+export function useScripts() {
+  const { context } = useSession();
+  const params = new URLSearchParams({ context }).toString();
+  // Request is deduped and cached; Can be shared across components
+  const { data, error } = useSWR(
+    context ? ["/api/scripts", params] : null,
+    fetcher
+  );
+
+  return {
+    scripts: data,
+    isLoading: !data && !error,
+    error,
+  };
+}

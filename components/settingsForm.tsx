@@ -36,10 +36,10 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
         }))
       : [];
 
-  const { isEnabled, hideShippingMethods } = formData;
+  const { isEnabled, hideFreeShipping } = formData;
   const [form, setForm] = useState<FormData>({
     isEnabled,
-    hideShippingMethods,
+    hideFreeShipping,
   });
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +48,7 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
   };
 
   const handleSelectChange = (value: SelectOption<any>[]) => {
-    setForm((prevForm) => ({ ...prevForm, hideShippingMethods: value }));
+    setForm((prevForm) => ({ ...prevForm, hideFreeShipping: value }));
   };
 
   const handleSubmit = (event: FormEvent<EventTarget>) => {
@@ -88,9 +88,9 @@ const SettingsForm = ({ formData, onCancel, onSubmit }: FormProps) => {
             disabled={!form.isEnabled}
             label="Hide Free Shipping"
             placeholder="Select Customer Groups"
-            name="hideShippingMethods"
+            name="hideFreeShipping"
             options={customerGroupOptions}
-            value={form.hideShippingMethods}
+            value={form.hideFreeShipping}
             onOptionsChange={handleSelectChange}
           />
           <Small as="span" color="secondary50">

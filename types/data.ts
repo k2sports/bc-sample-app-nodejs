@@ -1,6 +1,6 @@
 export interface FormData {
   isEnabled: boolean;
-  hideShippingMethods: any[];
+  hideFreeShipping: any[];
 }
 
 export interface TableItem {
