@@ -41,10 +41,11 @@ const SettingsForm = ({
         }))
       : [];
 
-  const { isEnabled, hideFreeShipping } = formData;
+  const { isEnabled, hideFreeShipping, showRecommendedMethod } = formData;
   const [form, setForm] = useState<FormData>({
     isEnabled,
     hideFreeShipping,
+    showRecommendedMethod,
   });
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -80,13 +81,27 @@ const SettingsForm = ({
             onChange={handleChange}
           />
         </FormGroup>
-        <Small color="secondary50">
-          Enabling this will set the recommended shipping method as the only
-          available shipping method in checkout. This prevents multiple shipping
-          method options when a free shipping promotion is being used.
-        </Small>
       </Flex>
       <HR marginVertical="xLarge" />
+      <Flex flexDirection="column" marginBottom="xLarge">
+        <FormGroup>
+          <label htmlFor="show-recommended-method">
+            <Text bold>Only Show Recommended</Text>
+          </label>
+          <Switch
+            id="show-recommended-method"
+            name="showRecommendedMethod"
+            checked={form.showRecommendedMethod}
+            onChange={handleChange}
+            disabled={!form.isEnabled}
+          />
+        </FormGroup>
+        <Small color="secondary50">
+          Set the recommended shipping method as the only available shipping
+          method in checkout. This prevents multiple shipping method options
+          when a free shipping promotion is being used.
+        </Small>
+      </Flex>
       <FormGroup>
         <Flex flexDirection="column" flexRowGap="8px">
           <MultiSelect

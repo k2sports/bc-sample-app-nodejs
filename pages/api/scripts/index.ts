@@ -1,9 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  bigcommerceClient,
-  encodePayload,
-  getSession,
-} from "../../../lib/auth";
+import { bigcommerceClient, getSession } from "../../../lib/auth";
 
 export default async function scripts(
   req: NextApiRequest,
