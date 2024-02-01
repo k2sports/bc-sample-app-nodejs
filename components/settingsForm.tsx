@@ -41,10 +41,10 @@ const SettingsForm = ({
         }))
       : [];
 
-  const { isEnabled, hideFreeShipping, showRecommendedMethod } = formData;
+  const { isEnabled, hideFreeShippingGroups, showRecommendedMethod } = formData;
   const [form, setForm] = useState<FormData>({
     isEnabled,
-    hideFreeShipping,
+    hideFreeShippingGroups,
     showRecommendedMethod,
   });
 
@@ -54,7 +54,7 @@ const SettingsForm = ({
   };
 
   const handleSelectChange = (value: SelectOption<any>[]) => {
-    setForm((prevForm) => ({ ...prevForm, hideFreeShipping: value }));
+    setForm((prevForm) => ({ ...prevForm, hideFreeShippingGroups: value }));
   };
 
   const handleSubmit = (event: FormEvent<EventTarget>) => {
@@ -72,7 +72,7 @@ const SettingsForm = ({
       <Flex flexDirection="column">
         <FormGroup>
           <label htmlFor="enable-modify-shipping-methods">
-            <Text bold>Enable</Text>
+            <Text bold>Enable App</Text>
           </label>
           <Switch
             id="enable-modify-shipping-methods"
@@ -81,8 +81,15 @@ const SettingsForm = ({
             onChange={handleChange}
           />
         </FormGroup>
+
+        <Small color="secondary50">
+          Enabling adds a script for injecting configuration on checkout and
+          sets &quot;Custom Checkout&quot; script url. Disabling will disable
+          the script and reset checkout type to &quot;Optimized One-Page
+          Checkout&quot;.
+        </Small>
       </Flex>
-      <HR marginVertical="xLarge" />
+      <HR marginVertical="xxLarge" />
       <Flex flexDirection="column" marginBottom="xLarge">
         <FormGroup>
           <label htmlFor="show-recommended-method">
@@ -108,13 +115,15 @@ const SettingsForm = ({
             disabled={!form.isEnabled}
             label="Hide Free Shipping"
             placeholder="Select Customer Groups"
-            name="hideFreeShipping"
+            name="hideFreeShippingGroups"
             options={customerGroupOptions}
-            value={form.hideFreeShipping}
+            value={form.hideFreeShippingGroups}
             onOptionsChange={handleSelectChange}
+            filterable
           />
           <Small as="span" color="secondary50">
-            Hide free shipping method for selected customer groups.
+            Hide free shipping method for selected customer groups. Still allows
+            free shipping promotions.
           </Small>
         </Flex>
       </FormGroup>

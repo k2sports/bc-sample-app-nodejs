@@ -1,6 +1,6 @@
 export interface FormData {
   isEnabled: boolean;
-  hideFreeShipping: any[];
+  hideFreeShippingGroups: any[];
   showRecommendedMethod: boolean;
 }
 

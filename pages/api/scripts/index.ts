@@ -24,13 +24,10 @@ export default async function scripts(
     case "POST":
       try {
         const session = await getSession(req);
-        // const { accessToken, storeHash } = await getSession(req);
         const bigcommerce = bigcommerceClient(
           session.accessToken,
           session.storeHash
         );
-
-        // const encodedContext = encodePayload(session);
 
         const { data } = await bigcommerce.post(`/content/scripts`, body);
         res.status(200).json(data);

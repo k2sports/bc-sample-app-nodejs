@@ -1,4 +1,5 @@
 import useSWR from "swr";
+import { CheckoutSettingsResponse } from "@pages/api/checkouts/settings";
 import { useSession } from "../context/session";
 import {
   ErrorProps,
@@ -141,15 +142,17 @@ export function useScripts() {
   const { context } = useSession();
   const params = new URLSearchParams({ context }).toString();
   // Request is deduped and cached; Can be shared across components
-  const { data, error } = useSWR(
-    context ? ["/api/scripts", params] : null,
-    fetcher
-  );
+  const {
+    data,
+    error,
+    mutate: mutateScripts,
+  } = useSWR(context ? ["/api/scripts", params] : null, fetcher);
 
   return {
     scripts: data,
     isLoading: !data && !error,
     error,
+    mutateScripts,
   };
 }
 
@@ -170,3 +173,24 @@ export const useScript = (scriptId: number) => {
     error,
   };
 };
+
+export function useCheckoutSettings() {
+  const { context } = useSession();
+  const params = new URLSearchParams({ context }).toString();
+  // Request is deduped and cached; Can be shared across components
+  const {
+    data,
+    error,
+    mutate: mutateCheckoutSettings,
+  } = useSWR<CheckoutSettingsResponse, ErrorProps>(
+    context ? ["/api/checkouts/settings", params] : null,
+    fetcher
+  );
+
+  return {
+    checkoutSettings: data,
+    isLoading: !data && !error,
+    error,
+    mutateCheckoutSettings,
+  };
+}

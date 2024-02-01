@@ -1,22 +1,32 @@
 import { Flex, Message, Panel } from "@bigcommerce/big-design";
 import { useState } from "react";
+import InfoPanel from "@components/infoPanel";
+import RescourcesBox from "@components/resourcesBox";
 import SettingsForm from "@components/settingsForm";
 import { useSession } from "context/session";
-import { useScripts } from "../lib/hooks";
+import { useCheckoutSettings, useScripts } from "../lib/hooks";
 import { FormData } from "../types";
+
+export const CUSTOM_CHECKOUT_URL = "http://127.0.0.1:8080/auto-loader-dev.js";
 
 const Index = () => {
   const encodedContext = useSession()?.context;
-  const { error, isLoading, scripts } = useScripts();
+  const { scripts, isLoading: isLoadingScripts, mutateScripts } = useScripts();
+  const {
+    checkoutSettings,
+    isLoading: isLoadingCheckout,
+    mutateCheckoutSettings,
+  } = useCheckoutSettings();
 
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined
+  );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  console.log("scripts", scripts);
 
   const formData: FormData = {
     isEnabled: false,
-    hideFreeShipping: [],
+    hideFreeShippingGroups: [],
     showRecommendedMethod: false,
   };
 
@@ -27,11 +37,12 @@ const Index = () => {
   const handleSubmit = async (data: FormData) => {
     console.log("Handling Submitting...", data);
     setIsSuccess(false);
+    setErrorMessage(undefined);
     setIsSubmitting(true);
 
-    let customerGroupId = "";
-    if (data?.hideFreeShipping?.length) {
-      customerGroupId = `customerGroupId: ${data.hideFreeShipping[0]},`;
+    let customerGroupIds = "";
+    if (data?.hideFreeShippingGroups?.length) {
+      customerGroupIds = `customerGroupIds: [${data.hideFreeShippingGroups}],`;
     }
 
     const script = `<script>
@@ -40,27 +51,29 @@ const Index = () => {
                 window.checkoutConfig.hideShippingMethods = {
                     isEnabled: ${data.isEnabled},
                     showRecommendedMethod: ${data.showRecommendedMethod},
-                    ${customerGroupId}
+                    ${customerGroupIds}
                 };
             }
         };
         window.onload = modifyShippingMethods; 
         console.log('hello!');
     </script>`;
-    console.log(script);
 
     try {
       if (scripts?.length) {
         console.log("updating!");
         const scriptId = scripts[0].uuid;
-        await fetch(`/api/scripts/${scriptId}?context=${encodedContext}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            html: script,
-            enabled: data.isEnabled,
-          }),
-        });
+        const resp = await fetch(
+          `/api/scripts/${scriptId}?context=${encodedContext}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              html: script,
+              enabled: data.isEnabled,
+            }),
+          }
+        );
       } else {
         console.log("making a new one!");
         await fetch(`/api/scripts?context=${encodedContext}`, {
@@ -80,10 +93,29 @@ const Index = () => {
           }),
         });
       }
+
+      // Enable or Disable custom checkout
+      await fetch(`/api/checkouts/settings?context=${encodedContext}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          custom_checkout_script_url: data.isEnabled ? CUSTOM_CHECKOUT_URL : "",
+          order_confirmation_use_custom_checkout_script: false,
+          custom_order_confirmation_script_url: "",
+          custom_checkout_supports_uco_settings: true,
+        }),
+      });
+
+      // Refetch to validate local data
+      mutateScripts();
+      mutateCheckoutSettings();
+
+      // TODO: Save configuration to database
+
       setIsSuccess(true);
     } catch (error) {
       console.error(error);
-      setIsSuccess(false);
+      setErrorMessage(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +135,20 @@ const Index = () => {
           marginBottom="large"
         />
       )}
-      <Panel header="Settings" id="home">
+      {errorMessage && (
+        <Message
+          header="Oh no!"
+          type="error"
+          messages={[
+            {
+              text: `Something went wrong. Please try again. ${errorMessage}`,
+            },
+          ]}
+          onClose={() => setErrorMessage(undefined)}
+          marginBottom="large"
+        />
+      )}
+      <Panel header="App Settings" id="panel-settings">
         <Flex>
           <SettingsForm
             formData={formData}
@@ -113,6 +158,13 @@ const Index = () => {
           />
         </Flex>
       </Panel>
+      <InfoPanel
+        scripts={scripts}
+        checkoutSettings={checkoutSettings}
+        isEnabled={formData.isEnabled}
+        isLoading={isLoadingScripts || isLoadingCheckout}
+      />
+      <RescourcesBox />
     </>
   );
 };

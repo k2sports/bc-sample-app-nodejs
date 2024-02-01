@@ -1,15 +1,18 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { bigcommerceClient, getSession } from "../../../lib/auth";
+import { bigcommerceClient, getSession } from "../../../../lib/auth";
 
-export default async function scripts(
+export type CheckoutSettingsResponse = {
+  custom_checkout_script_url: string;
+  custom_checkout_supports_uco_settings: boolean;
+  custom_order_confirmation_script_url: string;
+  order_confirmation_use_custom_checkout_script: boolean;
+};
+
+export default async function checkoutSettings(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const {
-    body,
-    query: { id },
-    method,
-  } = req;
+  const { body, method } = req;
 
   switch (method) {
     case "GET":
@@ -17,8 +20,8 @@ export default async function scripts(
         const { accessToken, storeHash } = await getSession(req);
         const bigcommerce = bigcommerceClient(accessToken, storeHash);
 
-        const { data } = await bigcommerce.get(`/content/scripts/${id}`);
-        console.log("data", data);
+        const { data } = await bigcommerce.get("/checkouts/settings");
+
         res.status(200).json(data);
       } catch (error) {
         const { message, response } = error;
@@ -27,10 +30,13 @@ export default async function scripts(
       break;
     case "PUT":
       try {
-        const { accessToken, storeHash } = await getSession(req);
-        const bigcommerce = bigcommerceClient(accessToken, storeHash);
+        const session = await getSession(req);
+        const bigcommerce = bigcommerceClient(
+          session.accessToken,
+          session.storeHash
+        );
 
-        const { data } = await bigcommerce.put(`/content/scripts/${id}`, body);
+        const { data } = await bigcommerce.put(`/checkouts/settings`, body);
         res.status(200).json(data);
       } catch (error) {
         const { message, response } = error;
