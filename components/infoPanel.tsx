@@ -29,7 +29,9 @@ const InfoPanel = ({
     message: "Custom checkout setting couldn't be fetched.",
   };
 
-  if (isLoading) return <Loading />;
+  if (isLoading) {
+    return <Loading />;
+  }
 
   if (checkoutSettings) {
     if (isEnabled && checkoutSettings.custom_checkout_script_url === "") {

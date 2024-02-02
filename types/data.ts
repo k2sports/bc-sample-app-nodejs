@@ -18,3 +18,9 @@ export interface ListItem extends FormData {
 export interface StringKeyValue {
   [key: string]: string;
 }
+
+export interface StoreSettings {
+  isEnabled: number;
+  hideFreeShippingGroups: string;
+  showRecommendedMethod: number;
+}

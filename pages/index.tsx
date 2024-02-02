@@ -1,10 +1,15 @@
 import { Flex, Message, Panel } from "@bigcommerce/big-design";
 import { useState } from "react";
 import InfoPanel from "@components/infoPanel";
+import Loading from "@components/loading";
 import RescourcesBox from "@components/resourcesBox";
 import SettingsForm from "@components/settingsForm";
 import { useSession } from "context/session";
-import { useCheckoutSettings, useScripts } from "../lib/hooks";
+import {
+  useCheckoutSettings,
+  useScripts,
+  useStoreSettings,
+} from "../lib/hooks";
 import { FormData } from "../types";
 
 export const CUSTOM_CHECKOUT_URL = "http://127.0.0.1:8080/auto-loader-dev.js";
@@ -18,6 +23,9 @@ const Index = () => {
     mutateCheckoutSettings,
   } = useCheckoutSettings();
 
+  const { storeSettings } = useStoreSettings();
+  console.log("useStoreSettings", storeSettings);
+
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
@@ -25,9 +33,9 @@ const Index = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const formData: FormData = {
-    isEnabled: false,
-    hideFreeShippingGroups: [],
-    showRecommendedMethod: false,
+    isEnabled: storeSettings?.isEnabled || false,
+    hideFreeShippingGroups: storeSettings?.hideFreeShippingGroups || [],
+    showRecommendedMethod: storeSettings?.showRecommendedMethod || false,
   };
 
   const handleCancel = () => {
@@ -60,55 +68,70 @@ const Index = () => {
     </script>`;
 
     try {
-      if (scripts?.length) {
-        console.log("updating!");
-        const scriptId = scripts[0].uuid;
-        const resp = await fetch(
-          `/api/scripts/${scriptId}?context=${encodedContext}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              html: script,
-              enabled: data.isEnabled,
-            }),
-          }
-        );
-      } else {
-        console.log("making a new one!");
-        await fetch(`/api/scripts?context=${encodedContext}`, {
-          method: "POST",
+      const resp = await fetch(
+        `/api/store_settings?context=${encodedContext}`,
+        {
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: "Modify Shipping Methods",
-            description: "Do things.",
-            html: script,
-            auto_uninstall: true,
-            load_method: "default",
-            location: "footer",
-            visibility: "checkout",
-            kind: "script_tag",
-            consent_category: "functional",
-            enabled: true,
+            isEnabled: data.isEnabled,
+            showRecommendedMethod: data.showRecommendedMethod,
+            hideFreeShippingGroups: `${data.hideFreeShippingGroups}`,
           }),
-        });
-      }
+        }
+      );
 
-      // Enable or Disable custom checkout
-      await fetch(`/api/checkouts/settings?context=${encodedContext}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          custom_checkout_script_url: data.isEnabled ? CUSTOM_CHECKOUT_URL : "",
-          order_confirmation_use_custom_checkout_script: false,
-          custom_order_confirmation_script_url: "",
-          custom_checkout_supports_uco_settings: true,
-        }),
-      });
+      console.log("updating db!", resp);
 
-      // Refetch to validate local data
-      mutateScripts();
-      mutateCheckoutSettings();
+      //   if (scripts?.length) {
+      //     console.log("updating!");
+      //     const scriptId = scripts[0].uuid;
+      //     const resp = await fetch(
+      //       `/api/scripts/${scriptId}?context=${encodedContext}`,
+      //       {
+      //         method: "PUT",
+      //         headers: { "Content-Type": "application/json" },
+      //         body: JSON.stringify({
+      //           html: script,
+      //           enabled: data.isEnabled,
+      //         }),
+      //       }
+      //     );
+      //   } else {
+      //     console.log("making a new one!");
+      //     await fetch(`/api/scripts?context=${encodedContext}`, {
+      //       method: "POST",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify({
+      //         name: "Modify Shipping Methods",
+      //         description: "Do things.",
+      //         html: script,
+      //         auto_uninstall: true,
+      //         load_method: "default",
+      //         location: "footer",
+      //         visibility: "checkout",
+      //         kind: "script_tag",
+      //         consent_category: "functional",
+      //         enabled: true,
+      //       }),
+      //     });
+      //   }
+
+      //   // Enable or Disable custom checkout
+      //   await fetch(`/api/checkouts/settings?context=${encodedContext}`, {
+      //     method: "PUT",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       custom_checkout_script_url: data.isEnabled ? CUSTOM_CHECKOUT_URL : "",
+      //       order_confirmation_use_custom_checkout_script: false,
+      //       custom_order_confirmation_script_url: "",
+      //       custom_checkout_supports_uco_settings: true,
+      //     }),
+      //   });
+
+      //   // Refetch to validate local data
+      //   mutateScripts();
+      //   mutateCheckoutSettings();
 
       // TODO: Save configuration to database
 

@@ -194,3 +194,19 @@ export function useCheckoutSettings() {
     mutateCheckoutSettings,
   };
 }
+
+export function useStoreSettings() {
+  const { context } = useSession();
+  const params = new URLSearchParams({ context }).toString();
+  // Request is deduped and cached; Can be shared across components
+  const { data, error } = useSWR(
+    context ? ["/api/store_settings", params] : null,
+    fetcher
+  );
+
+  return {
+    storeSettings: data,
+    isLoading: !data && !error,
+    error,
+  };
+}
