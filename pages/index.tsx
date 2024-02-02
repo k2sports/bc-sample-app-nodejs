@@ -1,4 +1,4 @@
-import { Flex, Message, Panel } from "@bigcommerce/big-design";
+import { Flex, Message, Panel, Small } from "@bigcommerce/big-design";
 import { useState } from "react";
 import InfoPanel from "@components/infoPanel";
 import Loading from "@components/loading";
@@ -49,7 +49,7 @@ const Index = () => {
           header="Success!"
           messages={[
             {
-              text: "Successully updated all configurations and checkout settings.",
+              text: "All configurations and checkout settings have been updated.",
             },
           ]}
           onClose={() => setIsSuccess(false)}
@@ -87,6 +87,7 @@ const Index = () => {
         isLoading={isLoadingScripts || isLoadingCheckout || isLoadingSettings}
       />
       <RescourcesBox />
+      <Small marginTop="medium">Manage Shipping Methods v0.0.1-beta</Small>
     </>
   );
 };

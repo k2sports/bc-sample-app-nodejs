@@ -143,7 +143,7 @@ const SettingsForm = ({
             visibility: "checkout",
             kind: "script_tag",
             consent_category: "functional",
-            enabled: true,
+            enabled: data.isEnabled,
           }),
         });
       }
