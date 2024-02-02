@@ -21,7 +21,11 @@ const Index = () => {
     mutateCheckoutSettings,
   } = useCheckoutSettings();
 
-  const { storeSettings, isLoading: isLoadingSettings } = useStoreSettings();
+  const {
+    storeSettings,
+    isLoading: isLoadingSettings,
+    mutateStoreSettings,
+  } = useStoreSettings();
 
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
@@ -31,6 +35,12 @@ const Index = () => {
   if (isLoadingCheckout || isLoadingScripts || isLoadingSettings) {
     return <Loading />;
   }
+
+  const refreshData = () => {
+    mutateCheckoutSettings();
+    mutateScripts();
+    mutateStoreSettings();
+  };
 
   return (
     <>
@@ -59,12 +69,6 @@ const Index = () => {
           marginBottom="large"
         />
       )}
-      <InfoPanel
-        scripts={scripts}
-        checkoutSettings={checkoutSettings}
-        isEnabled={storeSettings?.isEnabled || false}
-        isLoading={isLoadingScripts || isLoadingCheckout || isLoadingSettings}
-      />
       <Panel header="App Settings" id="panel-settings">
         <Flex>
           <SettingsForm
@@ -72,9 +76,16 @@ const Index = () => {
             scripts={scripts}
             setIsSuccess={setIsSuccess}
             setErrorMessage={setErrorMessage}
+            refreshData={refreshData}
           />
         </Flex>
       </Panel>
+      <InfoPanel
+        scripts={scripts}
+        checkoutSettings={checkoutSettings}
+        isEnabled={storeSettings?.isEnabled || false}
+        isLoading={isLoadingScripts || isLoadingCheckout || isLoadingSettings}
+      />
       <RescourcesBox />
     </>
   );

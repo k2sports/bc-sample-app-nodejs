@@ -21,6 +21,7 @@ interface FormProps {
   scripts: any;
   setIsSuccess(isSuccess: boolean): void;
   setErrorMessage(errorMessage: string | undefined): void;
+  refreshData(): void;
 }
 
 const FormErrors = {
@@ -33,6 +34,7 @@ const SettingsForm = ({
   scripts,
   setIsSuccess,
   setErrorMessage,
+  refreshData,
 }: FormProps) => {
   console.log("SettingsForm", { settings, scripts });
   const encodedContext = useSession()?.context;
@@ -159,10 +161,7 @@ const SettingsForm = ({
       });
 
       // Refetch to validate local data
-      // mutateScripts();
-      // mutateCheckoutSettings();
-
-      // TODO: Save configuration to database
+      refreshData();
 
       setIsSuccess(true);
     } catch (error) {
