@@ -133,8 +133,6 @@ export async function hasStoreSettings(storeHash: string) {
     storeHash
   );
 
-  console.log("hasStoreSettings db", results?.length);
-
   return results.length > 0;
 }
 
@@ -145,8 +143,6 @@ export async function getStoreSettings(storeHash: string, user: User) {
     "SELECT * FROM storeSettings WHERE storeHash = ? LIMIT 1",
     storeHash
   );
-
-  console.log("getStoreSettings db", results);
 
   return results.length ? results[0] : null;
 }
@@ -161,15 +157,10 @@ export async function setStoreSettings(
   } = session;
   if (!userId) return null;
 
-  //   const contextString = context ?? sub;
-  //   const storeHash = contextString?.split("/")[1] || "";
-
   const shouldUpdateSettings = await hasStoreSettings(storeHash);
-  console.log("shouldUpdateSettings", shouldUpdateSettings);
 
   if (shouldUpdateSettings) {
-    console.log("updating");
-    const testUpdate = await query(
+    await query(
       "UPDATE storeSettings SET isEnabled = ?, showRecommendedMethod = ?, hideFreeShippingGroups = ? WHERE storeHash = ?",
       [
         storeSettings.isEnabled,
@@ -178,16 +169,13 @@ export async function setStoreSettings(
         storeHash,
       ]
     );
-    console.log("testUpdate", testUpdate);
   } else {
-    console.log("inserting");
-    const testInsert = await query("INSERT INTO storeSettings SET ?", {
+    await query("INSERT INTO storeSettings SET ?", {
       isEnabled: storeSettings.isEnabled,
       showRecommendedMethod: storeSettings.showRecommendedMethod,
       hideFreeShippingGroups: storeSettings.hideFreeShippingGroups,
       storeHash,
     });
-    console.log("testInsert", testInsert);
   }
 
   // maybe return settings after?

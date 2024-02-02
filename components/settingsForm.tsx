@@ -12,13 +12,15 @@ import {
 } from "@bigcommerce/big-design";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useCustomerGroups } from "@lib/hooks";
-import { FormData } from "../types";
+import { CUSTOM_CHECKOUT_URL } from "@pages/index";
+import { useSession } from "context/session";
+import { FormData, StoreSettings } from "../types";
 
 interface FormProps {
-  formData: FormData;
-  isLoading: boolean;
-  onCancel(): void;
-  onSubmit(form: FormData): void;
+  settings: StoreSettings;
+  scripts: any;
+  setIsSuccess(isSuccess: boolean): void;
+  setErrorMessage(errorMessage: string | undefined): void;
 }
 
 const FormErrors = {
@@ -27,11 +29,15 @@ const FormErrors = {
 };
 
 const SettingsForm = ({
-  formData,
-  isLoading,
-  onCancel,
-  onSubmit,
+  settings,
+  scripts,
+  setIsSuccess,
+  setErrorMessage,
 }: FormProps) => {
+  console.log("SettingsForm", { settings, scripts });
+  const encodedContext = useSession()?.context;
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   const { error, customerGroups } = useCustomerGroups();
   const customerGroupOptions =
     customerGroups?.length && !error
@@ -41,11 +47,15 @@ const SettingsForm = ({
         }))
       : [];
 
-  const { isEnabled, hideFreeShippingGroups, showRecommendedMethod } = formData;
+  const hideFreeShippingGroupsArr =
+    settings?.hideFreeShippingGroups
+      ?.split(",")
+      ?.map((group) => Number(group)) || [];
+
   const [form, setForm] = useState<FormData>({
-    isEnabled,
-    hideFreeShippingGroups,
-    showRecommendedMethod,
+    isEnabled: settings?.isEnabled === 1 || false,
+    hideFreeShippingGroups: hideFreeShippingGroupsArr,
+    showRecommendedMethod: settings?.showRecommendedMethod === 1 || false,
   });
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -57,14 +67,110 @@ const SettingsForm = ({
     setForm((prevForm) => ({ ...prevForm, hideFreeShippingGroups: value }));
   };
 
-  const handleSubmit = (event: FormEvent<EventTarget>) => {
+  const handleCancel = () => {
+    console.log("Handling Canceling...");
+  };
+
+  const handleSubmit = async (event: FormEvent<EventTarget>) => {
     event.preventDefault();
 
     // If there are errors, do not submit the form
     // const hasErrors = Object.keys(errors).length > 0;
     // if (hasErrors) return;
 
-    onSubmit(form);
+    const data = form;
+    console.log("Handling Submitting...", data);
+
+    setIsSuccess(false);
+    setErrorMessage(undefined);
+    setIsSubmitting(true);
+
+    let customerGroupIds = "";
+    if (data?.hideFreeShippingGroups?.length) {
+      customerGroupIds = `customerGroupIds: [${data.hideFreeShippingGroups}],`;
+    }
+
+    const script = `<script>
+        function modifyShippingMethods() {
+            if(window?.checkoutConfig) {
+                window.checkoutConfig.hideShippingMethods = {
+                    isEnabled: ${data.isEnabled},
+                    showRecommendedMethod: ${data.showRecommendedMethod},
+                    ${customerGroupIds}
+                };
+            }
+        };
+        window.onload = modifyShippingMethods; 
+    </script>`;
+
+    try {
+      const resp = await fetch(
+        `/api/store_settings?context=${encodedContext}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            isEnabled: data.isEnabled,
+            showRecommendedMethod: data.showRecommendedMethod,
+            hideFreeShippingGroups: `${data.hideFreeShippingGroups}`,
+          }),
+        }
+      );
+
+      if (scripts?.length) {
+        const scriptId = scripts[0].uuid;
+        await fetch(`/api/scripts/${scriptId}?context=${encodedContext}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            html: script,
+            enabled: data.isEnabled,
+          }),
+        });
+      } else {
+        await fetch(`/api/scripts?context=${encodedContext}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Modify Shipping Methods",
+            description: "Do things.",
+            html: script,
+            auto_uninstall: true,
+            load_method: "default",
+            location: "footer",
+            visibility: "checkout",
+            kind: "script_tag",
+            consent_category: "functional",
+            enabled: true,
+          }),
+        });
+      }
+
+      // Enable or Disable custom checkout
+      await fetch(`/api/checkouts/settings?context=${encodedContext}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          custom_checkout_script_url: data.isEnabled ? CUSTOM_CHECKOUT_URL : "",
+          order_confirmation_use_custom_checkout_script: false,
+          custom_order_confirmation_script_url: "",
+          custom_checkout_supports_uco_settings: true,
+        }),
+      });
+
+      // Refetch to validate local data
+      // mutateScripts();
+      // mutateCheckoutSettings();
+
+      // TODO: Save configuration to database
+
+      setIsSuccess(true);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -134,12 +240,12 @@ const SettingsForm = ({
           marginRight="medium"
           type="button"
           variant="subtle"
-          onClick={onCancel}
+          onClick={handleCancel}
         >
           Cancel
         </Button>
-        <Button type="submit" isLoading={isLoading}>
-          Update
+        <Button type="submit" isLoading={isSubmitting}>
+          Save
         </Button>
       </Flex>
     </StyledForm>

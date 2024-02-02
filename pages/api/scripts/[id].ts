@@ -18,7 +18,6 @@ export default async function scripts(
         const bigcommerce = bigcommerceClient(accessToken, storeHash);
 
         const { data } = await bigcommerce.get(`/content/scripts/${id}`);
-        console.log("data", data);
         res.status(200).json(data);
       } catch (error) {
         const { message, response } = error;

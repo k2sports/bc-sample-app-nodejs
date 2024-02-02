@@ -22,11 +22,21 @@ const InfoPanel = ({
   isEnabled,
   isLoading = false,
 }: PanelProps) => {
-  console.log("Info Panel", { scripts, checkoutSettings });
+  console.log("Info Panel", {
+    scripts,
+    checkoutSettings,
+    isEnabled,
+    isLoading,
+  });
 
   const customCheckoutStatusInfo: InfoMessage = {
     type: "error",
     message: "Custom checkout setting couldn't be fetched.",
+  };
+
+  const checkoutScriptStatusInfo: InfoMessage = {
+    type: "error",
+    message: "Scripts couldn't be fetched.",
   };
 
   if (isLoading) {
@@ -44,7 +54,7 @@ const InfoPanel = ({
     ) {
       customCheckoutStatusInfo.type = "error";
       customCheckoutStatusInfo.message =
-        "Custom checkout is using the wrong checkout script url. Please verify your store's checkout settings then try saving the app settings to enable custom checkout correctly.";
+        "Custom checkout is using the wrong checkout script url. Please verify your store's checkout settings then try saving the app settings to correctly enable custom checkout.";
     } else if (
       !isEnabled &&
       checkoutSettings.custom_checkout_script_url === ""
@@ -65,6 +75,26 @@ const InfoPanel = ({
     }
   }
 
+  if (isEnabled && scripts?.length && scripts[0].enabled) {
+    checkoutScriptStatusInfo.type = "success";
+    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script is enabled for checkout.`;
+  } else if (
+    (isEnabled && !scripts?.length) ||
+    (isEnabled && scripts?.length && !scripts[0].enabled)
+  ) {
+    checkoutScriptStatusInfo.type = "error";
+    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script does not exist or is not enabled. Try saving the settings to create/enable the script.`;
+  } else if (
+    (!isEnabled && !scripts?.length) ||
+    (!isEnabled && scripts?.length && !scripts[0].enabled)
+  ) {
+    checkoutScriptStatusInfo.type = "info";
+    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script is disabled.`;
+  } else if (!isEnabled && scripts?.length && scripts[0].enabled) {
+    checkoutScriptStatusInfo.type = "warning";
+    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script is still enabled. Save the settings to properly disable the script.`;
+  }
+
   return (
     <Panel header="App Info" id="panel-info">
       <Small>
@@ -75,10 +105,10 @@ const InfoPanel = ({
         marginVertical="medium"
         messages={[
           {
-            text: `"Modify Shipping Methods" configuration script is enabled for checkout.`,
+            text: checkoutScriptStatusInfo.message,
           },
         ]}
-        type="success"
+        type={checkoutScriptStatusInfo.type}
       />
       <InlineMessage
         header="Custom Checkout Script"
