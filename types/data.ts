@@ -23,4 +23,6 @@ export interface StoreSettings {
   isEnabled: number;
   hideFreeShippingGroups: string;
   showRecommendedMethod: number;
+  storeHash?: string;
+  id?: number;
 }

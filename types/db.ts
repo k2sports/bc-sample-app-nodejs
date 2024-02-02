@@ -1,4 +1,9 @@
-import { SessionProps, StoreSettings, User } from "./index";
+import {
+  SessionContextProps,
+  SessionProps,
+  StoreSettings,
+  User,
+} from "./index";
 
 export interface StoreData {
   accessToken?: string;
@@ -19,9 +24,14 @@ export interface Db {
   getStoreToken(storeId: string): Promise<string> | null;
   deleteStore(session: SessionProps): Promise<void>;
   deleteUser(session: SessionProps): Promise<void>;
-  getStoreSettings(storeHash: string, user: User): Promise<string> | null;
+  hasStoreSettings(storeHash: string): Promise<boolean> | null;
+  getStoreSettings(
+    storeHash: string,
+    user: User
+  ): Promise<StoreSettings> | null;
   setStoreSettings(
-    session: SessionProps,
+    session: SessionContextProps,
     storeSettings: StoreSettings
   ): Promise<void>;
+  deleteStoreSettings(session: SessionProps): Promise<void>;
 }

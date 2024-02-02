@@ -1,4 +1,4 @@
-import { SessionContextProps, SessionProps, StoreSettings } from "@types";
+import { SessionContextProps, StoreSettings } from "@types";
 import db from "./db";
 
 export async function getStoreSettings({

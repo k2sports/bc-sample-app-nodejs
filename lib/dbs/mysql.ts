@@ -89,6 +89,7 @@ export async function setStoreUser(session: SessionProps) {
 }
 
 export async function deleteUser({ context, user, sub }: SessionProps) {
+  console.log("delete user", context ?? sub);
   const contextString = context ?? sub;
   const storeHash = contextString?.split("/")[1] || "";
   const values = [String(user?.id), storeHash];
@@ -121,7 +122,15 @@ export async function getStoreToken(storeHash: string) {
   return results.length ? results[0].accessToken : null;
 }
 
-export async function deleteStore({ store_hash: storeHash }: SessionProps) {
+// export async function deleteStore({ store_hash: storeHash }: SessionProps) {
+//   console.log("delete store", storeHash);
+//   await query("DELETE FROM stores WHERE storeHash = ?", storeHash);
+// }
+
+export async function deleteStore({ context, sub }: SessionProps) {
+  console.log("delete store", context ?? sub);
+  const contextString = context ?? sub;
+  const storeHash = contextString?.split("/")[1] || "";
   await query("DELETE FROM stores WHERE storeHash = ?", storeHash);
 }
 
@@ -180,4 +189,11 @@ export async function setStoreSettings(
 
   // maybe return settings after?
   return;
+}
+
+export async function deleteStoreSettings({ context, sub }: SessionProps) {
+  console.log("delete store settings", context ?? sub);
+  const contextString = context ?? sub;
+  const storeHash = contextString?.split("/")[1] || "";
+  await query("DELETE FROM storeSettings WHERE storeHash = ?", [storeHash]);
 }
