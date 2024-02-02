@@ -54,7 +54,7 @@ const InfoPanel = ({
     ) {
       customCheckoutStatusInfo.type = "error";
       customCheckoutStatusInfo.message =
-        "Custom checkout is using the wrong checkout script url. Please verify your store's checkout settings then try saving the app settings to correctly enable custom checkout.";
+        "Custom checkout is using the wrong checkout script url. Please verify your store's checkout settings and app settings then save to correctly enable custom checkout.";
     } else if (
       !isEnabled &&
       checkoutSettings.custom_checkout_script_url === ""
@@ -83,7 +83,7 @@ const InfoPanel = ({
     (isEnabled && scripts?.length && !scripts[0].enabled)
   ) {
     checkoutScriptStatusInfo.type = "error";
-    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script does not exist or is not enabled. Try saving the settings to create/enable the script.`;
+    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script does not exist or is not enabled. Veify all settings then save to create/enable the script.`;
   } else if (
     (!isEnabled && !scripts?.length) ||
     (!isEnabled && scripts?.length && !scripts[0].enabled)
@@ -92,7 +92,7 @@ const InfoPanel = ({
     checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script is disabled.`;
   } else if (!isEnabled && scripts?.length && scripts[0].enabled) {
     checkoutScriptStatusInfo.type = "warning";
-    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script is still enabled. Save the settings to properly disable the script.`;
+    checkoutScriptStatusInfo.message = `"Modify Shipping Methods" configuration script is still enabled. Verify all settings then save to properly disable the script.`;
   }
 
   return (

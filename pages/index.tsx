@@ -36,10 +36,10 @@ const Index = () => {
     <>
       {isSuccess && (
         <Message
-          header="You Nailed It!"
+          header="Success!"
           messages={[
             {
-              text: "Successully updated.",
+              text: "Successully updated all configurations and checkout settings.",
             },
           ]}
           onClose={() => setIsSuccess(false)}
