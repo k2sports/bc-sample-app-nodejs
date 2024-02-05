@@ -56,7 +56,7 @@ export default function getCheckoutInfo(
     info.type = "warning";
     info.message = [
       {
-        text: "Custom checkout is enabled even though the app is disabled.",
+        text: "Custom checkout is enabled even though app is disabled.",
       },
       {
         text: resaveNotice,

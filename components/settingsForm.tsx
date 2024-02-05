@@ -87,37 +87,34 @@ const SettingsForm = ({
     setErrorMessage(undefined);
     setIsSubmitting(true);
 
-    let customerGroupIds = "";
+    let hideFreeShippingGroups = "";
     if (data?.hideFreeShippingGroups?.length) {
-      customerGroupIds = `customerGroupIds: [${data.hideFreeShippingGroups}],`;
+      hideFreeShippingGroups = `hideFreeShippingGroups: [${data.hideFreeShippingGroups}],`;
     }
 
     const script = `<script>
-        function modifyShippingMethods() {
+        function manageShippingMethods() {
             if(window?.checkoutConfig) {
-                window.checkoutConfig.hideShippingMethods = {
+                window.checkoutConfig.manageShippingMethods = {
                     isEnabled: ${data.isEnabled},
                     showRecommendedMethod: ${data.showRecommendedMethod},
-                    ${customerGroupIds}
+                    ${hideFreeShippingGroups}
                 };
             }
         };
-        window.onload = modifyShippingMethods; 
+        window.onload = manageShippingMethods; 
     </script>`;
 
     try {
-      const resp = await fetch(
-        `/api/store_settings?context=${encodedContext}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            isEnabled: data.isEnabled,
-            showRecommendedMethod: data.showRecommendedMethod,
-            hideFreeShippingGroups: `${data.hideFreeShippingGroups}`,
-          }),
-        }
-      );
+      await fetch(`/api/store_settings?context=${encodedContext}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isEnabled: data.isEnabled,
+          showRecommendedMethod: data.showRecommendedMethod,
+          hideFreeShippingGroups: `${data.hideFreeShippingGroups}`,
+        }),
+      });
 
       if (scripts?.length) {
         const scriptId = scripts[0].uuid;
@@ -134,7 +131,7 @@ const SettingsForm = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: "Modify Shipping Methods",
+            name: "Manage Shipping Methods",
             description: "Do things.",
             html: script,
             auto_uninstall: true,

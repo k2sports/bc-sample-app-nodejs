@@ -99,6 +99,27 @@ export function decodePayload(encodedContext: string) {
 // Removes store and storeUser on uninstall
 export async function removeDataStore(session: SessionProps) {
   console.log("running removeDataStore!", session);
+
+  // Reset to optimized one-page checkout
+  //   const encodedContext = encodePayload(session);
+  //   if (encodedContext) {
+  //     console.log("reset checkout");
+  //     const response = await fetch(
+  //       `/api/checkouts/settings?context=${encodedContext}`,
+  //       {
+  //         method: "PUT",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           custom_checkout_script_url: "",
+  //           order_confirmation_use_custom_checkout_script: false,
+  //           custom_order_confirmation_script_url: "",
+  //           custom_checkout_supports_uco_settings: true,
+  //         }),
+  //       }
+  //     );
+  //     console.log("resp", response);
+  //   }
+  // Clean up db tables
   await db.deleteStore(session);
   await db.deleteUser(session);
   await db.deleteStoreSettings(session);

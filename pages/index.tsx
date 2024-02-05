@@ -1,5 +1,6 @@
 import { Flex, Message, Panel, Small } from "@bigcommerce/big-design";
 import { useState } from "react";
+import ErrorMessage from "@components/error";
 import InfoPanel from "@components/infoPanel";
 import Loading from "@components/loading";
 import RescourcesBox from "@components/resourcesBox";
@@ -13,16 +14,24 @@ import {
 export const CUSTOM_CHECKOUT_URL = "http://127.0.0.1:8080/auto-loader-dev.js";
 
 const Index = () => {
-  //   const encodedContext = useSession()?.context;
-  const { scripts, isLoading: isLoadingScripts, mutateScripts } = useScripts();
+  console.log(process.env);
+  const {
+    scripts,
+    error: hasScriptError,
+    isLoading: isLoadingScripts,
+    mutateScripts,
+  } = useScripts();
+
   const {
     checkoutSettings,
+    error: hasCheckoutError,
     isLoading: isLoadingCheckout,
     mutateCheckoutSettings,
   } = useCheckoutSettings();
 
   const {
     storeSettings,
+    error: hasSettingsError,
     isLoading: isLoadingSettings,
     mutateStoreSettings,
   } = useStoreSettings();
@@ -34,6 +43,15 @@ const Index = () => {
 
   if (isLoadingCheckout || isLoadingScripts || isLoadingSettings) {
     return <Loading />;
+  }
+
+  if (hasScriptError || hasCheckoutError || hasSettingsError) {
+    return (
+      <ErrorMessage
+        error={hasScriptError || hasCheckoutError || hasSettingsError}
+        renderPanel={false}
+      />
+    );
   }
 
   const refreshData = () => {
